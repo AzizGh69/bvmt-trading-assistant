@@ -11,7 +11,7 @@ from .analytics.market import MarketData, get_market, set_market
 from .config import get_settings
 from .data.loader import bootstrap_prices, load_price_frame
 from .db import get_engine, init_db
-from .routers import market
+from .routers import forecast, market
 
 log = logging.getLogger("bvmt")
 
@@ -66,6 +66,7 @@ def create_app() -> FastAPI:
         return {"status": "ok", "llm_configured": settings.llm_configured, "scraping_enabled": settings.enable_scraping, **loaded}
 
     app.include_router(market.router)
+    app.include_router(forecast.router)
     return app
 
 
