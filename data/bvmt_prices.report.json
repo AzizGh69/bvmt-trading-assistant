@@ -1,0 +1,25 @@
+{
+  "raw_files": {
+    "histo_cotation_2016.txt": 126065,
+    "histo_cotation_2017.txt": 133687,
+    "histo_cotation_2018.txt": 74594,
+    "histo_cotation_2019.txt": 77588,
+    "histo_cotation_2020.txt": 140415,
+    "histo_cotation_2021.txt": 137366,
+    "histo_cotation_2022.csv": 83939,
+    "histo_cotation_2023.csv": 147209,
+    "histo_cotation_2024.csv": 145381,
+    "histo_cotation_2025.csv": 142853,
+    "histo_cotation_2026.csv": 2275,
+    "web_histo_cotation_2022.csv": 144322,
+    "web_histo_cotation_2023.csv": 147209
+  },
+  "raw_rows": 1502903,
+  "tidy_rows": 208232,
+  "securities": 89,
+  "sessions": 2531,
+  "first_session": "2016-01-04",
+  "last_session": "2026-02-06",
+  "traded_rows": 152564,
+  "parquet_bytes": 2857134
+}
