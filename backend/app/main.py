@@ -1,6 +1,8 @@
 """FastAPI application: one process serving every backend feature."""
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import logging
 from contextlib import asynccontextmanager
 
@@ -11,7 +13,8 @@ from .analytics.market import MarketData, get_market, set_market
 from .config import get_settings
 from .data.loader import bootstrap_prices, load_price_frame
 from .db import get_engine, init_db
-from .routers import agents, anomalies, assistant, auth, forecast, market, portfolio, sentiment
+from .jobs import scheduler
+from .routers import agents, anomalies, assistant, auth, forecast, market, portfolio, reports, sentiment
 
 log = logging.getLogger("bvmt")
 
@@ -37,7 +40,16 @@ async def lifespan(app: FastAPI):
         log.warning("no price data loaded")
     else:
         log.info("market data ready: %d rows, last session %s", len(data.prices), data.last_session.date())
+    settings = get_settings()
+    task = None
+    if settings.enable_scheduler and not data.empty:
+        task = asyncio.create_task(scheduler(get_market, settings))
+        log.info("scheduler on: daily job every %d minutes", settings.scheduler_interval_minutes)
     yield
+    if task:
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
 
 
 def create_app() -> FastAPI:
@@ -73,6 +85,7 @@ def create_app() -> FastAPI:
     app.include_router(sentiment.router)
     app.include_router(agents.router)
     app.include_router(assistant.router)
+    app.include_router(reports.router)
     return app
 
 
