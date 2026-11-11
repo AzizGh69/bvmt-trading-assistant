@@ -203,3 +203,27 @@ export interface Forecast {
     traded_probability: number | null;
   };
 }
+
+// ---------------------------------------------------------------- anomalies
+export interface MarketAlert {
+  date: string;
+  ticker: string;
+  name: string;
+  sector: string;
+  close: number;
+  volume: number;
+  change_pct: number | null;
+  volume_z: number | null;
+  kinds: ("volume_spike" | "price_move" | "pattern" | "corporate_action")[];
+  severity: "low" | "medium" | "high" | "critical";
+  score: number;
+  message: string;
+}
+
+export interface AlertsResponse {
+  session: string;
+  scanned_sessions: number;
+  total: number;
+  by_severity: Record<MarketAlert["severity"], number>;
+  alerts: MarketAlert[];
+}
