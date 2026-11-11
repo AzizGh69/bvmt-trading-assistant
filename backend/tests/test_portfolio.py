@@ -110,6 +110,10 @@ def test_recommendation_is_complete(market):
     assert abs(sum(h["weight_pct"] for h in plan["holdings"]) - 100.0) < 0.1
     assert all(h["shares"] >= 0 and h["amount_tnd"] <= 20_000 * h["weight_pct"] / 100 + 0.01 for h in plan["holdings"])
     assert len(plan["frontier"]) == 12 and plan["stress_tests"] and plan["history"]
+    check = plan["out_of_sample"]
+    assert check["chosen_on"][1] < check["scored_on"][0]  # scored only on sessions it never saw
+    assert check["portfolio"]["volatility_pct"] > 0 and check["equal_weight"]["volatility_pct"] > 0
+    assert plan["in_sample"]["var95_tnd"] > 0
     volatilities = [p["volatility_pct"] for p in plan["frontier"]]
     assert volatilities == sorted(volatilities, reverse=True)  # the frontier runs from risky to safe
     with pytest.raises(ValueError):

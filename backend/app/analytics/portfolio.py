@@ -19,7 +19,7 @@ TRADING_DAYS = 250
 LOOKBACK = 500
 MIN_TRADED_SHARE = 0.7  # of the lookback sessions
 UNIVERSE_SIZE = 40
-MEAN_SHRINKAGE = 0.5  # pull each stock's mean return halfway to the cross-section's
+MEAN_SHRINKAGE = 0.7  # pull each stock's mean return most of the way to the cross-section's
 
 # Risk aversion and the largest weight one stock may take, per investor profile.
 PROFILES = {
@@ -239,6 +239,29 @@ def stress_tests(market: MarketData, weights: pd.Series) -> list[dict]:
     return scenarios
 
 
+def out_of_sample(returns: pd.DataFrame, risk_aversion: float, max_weight: float, risk_free_rate: float) -> dict | None:
+    """Choose weights on the first half of the window, score them on the second.
+
+    The figures computed on the estimation window itself flatter the optimiser,
+    which by construction picks what did well there. This is the honest check:
+    how an allocation chosen a year ago went on to behave, next to simply
+    holding every stock of the universe in equal parts.
+    """
+    half = len(returns) // 2
+    if half < 60:
+        return None
+    train, test = returns.iloc[:half], returns.iloc[half:]
+    mu, cov = estimate(train)
+    weights = optimise(mu, cov, risk_aversion, max_weight)
+    equal = pd.Series(1.0 / returns.shape[1], index=returns.columns)
+    return {
+        "chosen_on": [train.index[0].date().isoformat(), train.index[-1].date().isoformat()],
+        "scored_on": [test.index[0].date().isoformat(), test.index[-1].date().isoformat()],
+        "portfolio": risk_metrics(allocation_returns(test, weights), risk_free_rate),
+        "equal_weight": risk_metrics(allocation_returns(test, equal), risk_free_rate),
+    }
+
+
 # ------------------------------------------------------------ whole answer
 def recommend(market: MarketData, profile: str, risk_free_rate: float, capital: float | None = None) -> dict:
     """The optimal allocation for a profile, with its explanation, risk and stress tests."""
@@ -274,7 +297,9 @@ def recommend(market: MarketData, profile: str, risk_free_rate: float, capital: 
             "sharpe": round((expected_return - risk_free_rate) / math.sqrt(variance), 3) if variance > 0 else None,
         },
         "holdings": holdings,
-        "historical": risk_metrics(history, risk_free_rate, capital or 0.0),
+        # Measured on the sessions the weights were chosen on: an upper bound, not a promise.
+        "in_sample": risk_metrics(history, risk_free_rate, capital or 0.0),
+        "out_of_sample": out_of_sample(returns, settings["risk_aversion"], settings["max_weight"], risk_free_rate),
         "history": [{"date": d.date().isoformat(), "value": round(float(v) * 100.0, 2)} for d, v in curve.iloc[::5].items()],
         "frontier": frontier(mu, cov, settings["max_weight"]),
         "stress_tests": stress_tests(market, weights),
