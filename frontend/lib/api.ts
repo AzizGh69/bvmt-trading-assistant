@@ -3,9 +3,35 @@ import { API_URL } from "@/lib/config";
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
-    super(message);
+    super(inFrench(message));
     this.status = status;
   }
+}
+
+/** The API speaks English; the messages a user can cause are shown in French. */
+const MESSAGES: [RegExp, (...groups: string[]) => string][] = [
+  [
+    /^not enough cash: the order costs ([\d.]+) TND, ([\d.-]+) TND available$/,
+    (cost, cash) => `Liquidités insuffisantes : l’ordre coûte ${cost} TND, ${cash} TND disponibles.`,
+  ],
+  [/^cannot sell (\d+) (\S+): (\d+) held$/, (n, t, held) => `Impossible de vendre ${n} ${t} : ${held} en portefeuille.`],
+  [/^(\S+) is no longer listed$/, (t) => `${t} n’est plus cotée.`],
+  [/^unknown stock: (.+)$/, (t) => `Valeur inconnue : ${t}.`],
+  [/^wrong e-mail address or password$/, () => "Adresse e-mail ou mot de passe incorrect."],
+  [/^an account already uses this e-mail address$/, () => "Un compte utilise déjà cette adresse e-mail."],
+  [/^sign in to use this feature$/, () => "Connectez-vous pour utiliser cette fonction."],
+  [
+    /needs at least (\d+) sessions, found (\d+)$/,
+    (need, found) => `Historique trop court pour une prévision : ${found} séances, ${need} nécessaires.`,
+  ],
+];
+
+function inFrench(message: string): string {
+  for (const [pattern, render] of MESSAGES) {
+    const match = message.match(pattern);
+    if (match) return render(...match.slice(1));
+  }
+  return message;
 }
 
 const TOKEN_KEY = "bvmt-token";
@@ -226,4 +252,104 @@ export interface AlertsResponse {
   total: number;
   by_severity: Record<MarketAlert["severity"], number>;
   alerts: MarketAlert[];
+}
+
+// ---------------------------------------------------------------- portfolio
+export type RiskProfile = User["risk_profile"];
+
+export interface ProfileQuestions {
+  questions: Record<string, string[]>;
+  profiles: Record<RiskProfile, { risk_aversion: number; max_weight: number }>;
+}
+
+export interface RiskMetrics {
+  annual_return_pct: number | null;
+  volatility_pct: number | null;
+  sharpe: number | null;
+  max_drawdown_pct: number | null;
+  var95_pct: number | null;
+  cvar95_pct: number | null;
+  var95_tnd: number | null;
+}
+
+export interface StressTest {
+  name: "worst_20_sessions" | "worst_session" | "market_minus_10" | "largest_sector_minus_15";
+  kind: "historical" | "hypothetical";
+  from?: string;
+  to?: string;
+  sector?: string;
+  sector_weight_pct?: number;
+  market_pct: number;
+  portfolio_pct: number;
+}
+
+export interface Holding {
+  ticker: string;
+  name: string;
+  sector: string;
+  last_close: number;
+  weight_pct: number;
+  expected_return_pct: number;
+  volatility_pct: number;
+  return_contribution_pct: number;
+  risk_share_pct: number;
+  reason: "diversifier" | "return_driver" | "core";
+  shares?: number;
+  amount_tnd?: number;
+}
+
+export interface Recommendation {
+  profile: RiskProfile;
+  session: string;
+  universe: { stocks: number; lookback_sessions: number };
+  assumptions: { risk_aversion: number; max_weight: number; risk_free_rate: number; mean_shrinkage: number };
+  expected: { return_pct: number; volatility_pct: number; sharpe: number | null };
+  holdings: Holding[];
+  in_sample: RiskMetrics;
+  out_of_sample: {
+    chosen_on: [string, string];
+    scored_on: [string, string];
+    portfolio: RiskMetrics;
+    equal_weight: RiskMetrics;
+  } | null;
+  history: { date: string; value: number }[];
+  frontier: { risk_aversion: number; volatility_pct: number; return_pct: number }[];
+  stress_tests: StressTest[];
+}
+
+export interface AccountPosition {
+  ticker: string;
+  name: string;
+  sector: string;
+  quantity: number;
+  avg_cost: number;
+  last_close: number;
+  market_value: number;
+  pnl: number;
+  pnl_pct: number;
+  weight_pct: number;
+}
+
+export interface Account {
+  session: string;
+  initial_capital: number;
+  cash: number;
+  invested: number;
+  total_value: number;
+  pnl: number;
+  pnl_pct: number;
+  positions: AccountPosition[];
+  sectors: { sector: string; weight_pct: number }[];
+  risk: RiskMetrics | null;
+  stress_tests: StressTest[];
+}
+
+export interface TransactionRow {
+  id: number;
+  ticker: string;
+  side: "BUY" | "SELL";
+  quantity: number;
+  price: number;
+  amount: number;
+  session_date: string;
 }
