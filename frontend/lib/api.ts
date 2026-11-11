@@ -157,3 +157,49 @@ export interface AuthResponse {
   access_token: string;
   user: User;
 }
+
+// ---------------------------------------------------------------- forecast
+export interface AdfResult {
+  statistic: number | null;
+  p_value: number | null;
+  lags: number | null;
+  stationary: boolean | null;
+}
+
+export interface BacktestScore {
+  rmse: number | null;
+  mae: number | null;
+  directional_accuracy: number | null;
+  origins: number;
+}
+
+export interface Forecast {
+  ticker: string;
+  last_session: string;
+  last_close: number;
+  horizon: number;
+  model: { selected: "arima" | "ema" | "naive"; arima_order: number[]; beats_random_walk: boolean };
+  expected_return_pct: number;
+  daily_volatility_pct: number;
+  forecast: { date: string; price: number; lower80: number; upper80: number; lower95: number; upper95: number }[];
+  diagnostics: {
+    adf_log_price: AdfResult;
+    adf_log_returns: AdfResult;
+    candidates: { order: number[]; aic: number; bic: number }[];
+    selected_by_aic: number[] | null;
+    selected_by_bic: number[] | null;
+  };
+  backtest: {
+    span_sessions: number;
+    step_sessions: number;
+    horizon: number;
+    models: Record<"arima" | "ema" | "naive", BacktestScore>;
+  };
+  volume: {
+    expected: number;
+    lower80: number;
+    upper80: number;
+    average_20_sessions: number;
+    traded_probability: number | null;
+  };
+}

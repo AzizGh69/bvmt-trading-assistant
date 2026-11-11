@@ -190,7 +190,7 @@ export default function StockPage() {
         </dl>
       </Card>
 
-      <StockPanels ticker={data.ticker} />
+      <StockPanels ticker={data.ticker} history={data.history} />
     </div>
   );
 }
