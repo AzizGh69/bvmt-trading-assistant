@@ -1,0 +1,51 @@
+BVMT Trading Assistant
+Copyright (c) 2026 Mohamed Aziz Ghazouani
+
+This project is inspired by and built on two prototypes, with their authors'
+agreement.
+
+1. FAIN, by team Makarouna Kadheba (IHEC CodeLab 2.0)
+   https://github.com/Moetez-Fradi/IHEC-Code-Lab-Makarouna-Kadheba
+
+   FAIN's README declares the MIT licence
+   ("Copyright (c) 2026 Makarouna Kadheba - IHEC CodeLab 2.0"). Portions of
+   this repository are adapted from FAIN under that licence:
+
+   - frontend/ : the application shell, theme (light / dark), layout and the
+     small UI components (cards, badges, tabs, stat tiles, chart tooltip),
+     adapted from FAIN's ui/ folder;
+   - backend/app/analytics/tunizi.py : the Arabizi digit table, the Tunizi
+     market slang and the idea of mapping company nicknames to tickers,
+     adapted from FAIN's sentiment-analysis service (the matching itself is
+     rewritten).
+
+   The assistant's knowledge base (backend/app/knowledge/) is written for this
+   project; it is not taken from FAIN.
+
+   The MIT permission notice for those portions:
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+2. Tradeili, by The Overfitters
+   https://github.com/bechir23/ihec-fintech
+
+   Tradeili has no licence file, so none of its files are copied here. Its
+   ideas were reimplemented from scratch: the forecasting diagnostics (ADF
+   stationarity, AIC / BIC model selection, walk-forward backtests), the
+   five-agent pipeline with logged hand-offs and safety rules, the four-signal
+   decision engine and learning from user feedback.
+
+Market data: daily BVMT quotations (2016-2026) as published in the data folders
+of both prototypes, cleaned by scripts/build_dataset.py.
