@@ -11,7 +11,7 @@ from .analytics.market import MarketData, get_market, set_market
 from .config import get_settings
 from .data.loader import bootstrap_prices, load_price_frame
 from .db import get_engine, init_db
-from .routers import anomalies, forecast, market
+from .routers import anomalies, auth, forecast, market, portfolio
 
 log = logging.getLogger("bvmt")
 
@@ -68,6 +68,8 @@ def create_app() -> FastAPI:
     app.include_router(market.router)
     app.include_router(forecast.router)
     app.include_router(anomalies.router)
+    app.include_router(auth.router)
+    app.include_router(portfolio.router)
     return app
 
 
