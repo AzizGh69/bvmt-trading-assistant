@@ -204,6 +204,13 @@ class Pipeline:
         return self.run
 
 
+def iso_utc(moment: datetime | None) -> str | None:
+    """SQLite gives back naive datetimes; they were written in UTC, so say so."""
+    if moment is None:
+        return None
+    return (moment if moment.tzinfo else moment.replace(tzinfo=UTC)).isoformat()
+
+
 def run_out(run: AgentRun, messages: list[AgentMessage] | None = None) -> dict:
     out = {
         "id": run.id,
@@ -212,8 +219,8 @@ def run_out(run: AgentRun, messages: list[AgentMessage] | None = None) -> dict:
         "status": run.status,
         "action": (run.result or {}).get("action"),
         "score": (run.result or {}).get("score"),
-        "started_at": run.started_at.isoformat(),
-        "finished_at": run.finished_at.isoformat() if run.finished_at else None,
+        "started_at": iso_utc(run.started_at),
+        "finished_at": iso_utc(run.finished_at),
     }
     if messages is not None:
         out["result"] = run.result
@@ -225,7 +232,7 @@ def run_out(run: AgentRun, messages: list[AgentMessage] | None = None) -> dict:
                 "kind": m.kind,
                 "summary": m.summary,
                 "payload": m.payload,
-                "at": m.created_at.isoformat(),
+                "at": iso_utc(m.created_at),
             }
             for m in messages
         ]

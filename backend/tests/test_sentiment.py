@@ -19,6 +19,8 @@ def test_french_and_arabic_headlines():
     assert lexicon_sentiment("Grève générale : chute de la production")["label"] == "negative"
     assert lexicon_sentiment("ارتفاع الأرباح")["label"] == "positive"  # the article "ال" is read through
     assert lexicon_sentiment("تراجع المبيعات وخسائر")["score"] < 0
+    both = lexicon_sentiment("تراجع أرباح الشركة وخسائر")  # "profits fall" as one phrase, "and losses" through its prefix
+    assert len(both["matches"]) == 2 and all(m["weight"] < 0 for m in both["matches"])
     assert lexicon_sentiment("La société publie son rapport annuel")["label"] == "neutral"
 
 

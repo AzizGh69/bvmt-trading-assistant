@@ -130,6 +130,10 @@ def refresh_news(db: Session, market: MarketData, settings: Settings | None = No
     return {"fetched": len(articles), "stored": store_articles(db, market, articles), "errors": errors}
 
 
+def iso_utc(moment: datetime) -> str:
+    return (moment if moment.tzinfo else moment.replace(tzinfo=UTC)).isoformat()
+
+
 def article_out(article: NewsArticle) -> dict:
     return {
         "id": article.id,
@@ -141,7 +145,7 @@ def article_out(article: NewsArticle) -> dict:
         "score": article.score,
         "label": article.label,
         "method": article.method,
-        "published_at": (article.published_at or article.created_at).isoformat(),
+        "published_at": iso_utc(article.published_at or article.created_at),
     }
 
 

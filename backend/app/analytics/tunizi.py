@@ -35,7 +35,8 @@ FRENCH = {
     "rebond": 0.5, "rebondit": 0.5, "record": 0.6, "benefice": 0.6, "benefices": 0.6, "beneficiaire": 0.5,
     "croissance": 0.5, "dividende": 0.5, "dividendes": 0.5, "amelioration": 0.5, "ameliore": 0.5,
     "solide": 0.4, "gain": 0.5, "gains": 0.5, "optimisme": 0.5, "optimiste": 0.5, "excedent": 0.5,
-    "surperforme": 0.6, "partenariat": 0.3, "acquisition": 0.3, "redressement des resultats": 0.5,
+    "surperforme": 0.6, "hausse du benefice": 0.7, "hausse des benefices": 0.7,
+    "baisse du benefice": -0.7, "baisse des benefices": -0.7, "recul du benefice": -0.7, "recul des benefices": -0.7, "partenariat": 0.3, "acquisition": 0.3, "redressement des resultats": 0.5,
     # negative
     "baisse": -0.6, "en baisse": -0.6, "recul": -0.6, "recule": -0.6, "chute": -0.8, "plonge": -0.8,
     "degringole": -0.8, "perte": -0.7, "pertes": -0.7, "deficit": -0.7, "deficitaire": -0.7, "declin": -0.6,
@@ -53,6 +54,9 @@ ARABIC = {
     "انخفاض": -0.6, "انخفض": -0.6, "تراجع": -0.6, "هبوط": -0.7, "خسائر": -0.8, "خسارة": -0.8,
     "عجز": -0.7, "إضراب": -0.8, "اضراب": -0.8, "إفلاس": -1.0, "افلاس": -1.0, "أزمة": -0.6, "ازمة": -0.6,
     "تباطؤ": -0.5,
+    # a fall in profits is one bad thing, not one bad and one good word
+    "تراجع أرباح": -0.7, "تراجع الأرباح": -0.7, "انخفاض أرباح": -0.7, "انخفاض الأرباح": -0.7,
+    "ارتفاع أرباح": 0.7, "ارتفاع الأرباح": 0.7, "لا ارتفاع": -0.5,
 }
 
 NEGATIONS = {"pas", "ne", "non", "jamais", "sans", "aucun", "aucune", "mich", "mech", "moch", "موش", "لا", "ما", "لم", "لن", "غير"}
@@ -124,8 +128,11 @@ def lexicon_sentiment(text: str) -> dict:
             weight = LEXICON.get(phrase)
             negated = False
             if weight is None and n == 1:
-                if phrase.startswith("ال") and len(phrase) > 4:
-                    weight = LEXICON.get(phrase[2:])  # the Arabic article: "الأرباح" is "أرباح"
+                if phrase.startswith(("ال", "و")) and len(phrase) > 3:
+                    # Arabic prefixes: the article ("الأرباح" is "أرباح") and "and" ("وخسائر" is "خسائر").
+                    stem = phrase[1:] if phrase.startswith("و") else phrase
+                    stem = stem[2:] if stem.startswith("ال") and len(stem) > 4 else stem
+                    weight = LEXICON.get(stem)
                 elif phrase.endswith("ch") and LEXICON.get(phrase[:-2]) is not None:
                     # Tunisian "ma tla3ch": the verb carries the negation as a "-ch" suffix.
                     weight, negated = LEXICON[phrase[:-2]], True

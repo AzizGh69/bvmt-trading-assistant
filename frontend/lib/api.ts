@@ -353,3 +353,99 @@ export interface TransactionRow {
   amount: number;
   session_date: string;
 }
+
+// ---------------------------------------------------------------- agents
+export type Action = "BUY" | "HOLD" | "SELL" | "AVOID";
+
+export interface Signal {
+  name: "forecast" | "technical" | "sentiment" | "anomaly";
+  available: boolean;
+  score: number;
+  reason?: string;
+  expected_return_pct?: number;
+  uncertainty_pct?: number;
+  model?: string;
+  rsi?: number | null;
+  macd_histogram?: number | null;
+  close_vs_sma50_pct?: number | null;
+  articles?: number;
+  severity?: MarketAlert["severity"] | null;
+  count?: number;
+  kinds?: string[];
+  last_date?: string | null;
+}
+
+export interface Decision {
+  action: Action;
+  proposed_action: Action;
+  score: number;
+  threshold: number;
+  coverage: number;
+  contributions: { name: string; weight: number; score: number }[];
+  illiquid: boolean;
+  traded_share: number;
+  safety_rules: { rule: string; triggered: boolean; effect: string | null }[];
+  profile: RiskProfile;
+  disclaimer: string;
+  signals: Signal[];
+  held_weight_pct: number | null;
+  trust: Record<string, number> | null;
+}
+
+export interface AgentMessageRow {
+  seq: number;
+  sender: string;
+  receiver: string;
+  kind: "task" | "handoff" | "result" | "safety" | "error";
+  summary: string;
+  payload: Record<string, unknown>;
+  at: string;
+}
+
+export interface RunSummary {
+  id: number;
+  ticker: string;
+  risk_profile: RiskProfile;
+  status: "running" | "done" | "failed";
+  action: Action | null;
+  score: number | null;
+  started_at: string;
+  finished_at: string | null;
+}
+
+export interface RunDetail extends RunSummary {
+  result: Decision;
+  messages: AgentMessageRow[];
+  feedback?: { liked: boolean } | null;
+}
+
+export interface PolicyState {
+  trust: Record<string, number>;
+  updates: number;
+  feedback: number;
+  range: [number, number];
+}
+
+// ---------------------------------------------------------------- sentiment
+export interface SentimentResult {
+  score: number;
+  label: "positive" | "negative" | "neutral";
+  method: "llm" | "lexicon";
+  language: "fr" | "ar" | "tunizi";
+  reason: string | null;
+  matches: { term: string; weight: number; negated: boolean }[];
+  tickers: string[];
+}
+
+export interface Article {
+  id: number;
+  source: string;
+  url: string;
+  title: string;
+  language: string;
+  tickers: string[];
+  score: number;
+  label: SentimentResult["label"];
+  method: string;
+  published_at: string;
+}
