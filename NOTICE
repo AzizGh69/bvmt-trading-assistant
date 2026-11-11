@@ -14,11 +14,13 @@ agreement.
    - frontend/ : the application shell, theme (light / dark), layout and the
      small UI components (cards, badges, tabs, stat tiles, chart tooltip),
      adapted from FAIN's ui/ folder;
-   - backend/app/analytics/tunizi.py : the Tunizi / Arabizi normalisation
-     table and the financial sentiment lexicon, adapted from FAIN's
-     sentiment-analysis service;
-   - backend/app/knowledge/bvmt_knowledge_base.md : the BVMT knowledge base
-     used by the assistant's retrieval, adapted from FAIN's chatbot service.
+   - backend/app/analytics/tunizi.py : the Arabizi digit table, the Tunizi
+     market slang and the idea of mapping company nicknames to tickers,
+     adapted from FAIN's sentiment-analysis service (the matching itself is
+     rewritten).
+
+   The assistant's knowledge base (backend/app/knowledge/) is written for this
+   project; it is not taken from FAIN.
 
    The MIT permission notice for those portions:
 
