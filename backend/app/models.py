@@ -96,6 +96,7 @@ class Feedback(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    run_id: Mapped[int | None] = mapped_column(ForeignKey("agent_runs.id"), nullable=True, index=True)
     ticker: Mapped[str] = mapped_column(String(40))
     action: Mapped[str] = mapped_column(String(8))
     liked: Mapped[bool] = mapped_column(Boolean)
